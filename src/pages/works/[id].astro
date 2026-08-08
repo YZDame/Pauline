@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import catalogData from "../../data/catalog.json";
+import type { CatalogItem } from "../../types";
+
+export function getStaticPaths() {
+  const works = catalogData as CatalogItem[];
+  return works.map((work, index) => ({
+    params: { id: work.id },
+    props: {
+      work,
+      previous: works[index - 1] ?? null,
+      next: works[index + 1] ?? null,
+    },
+  }));
+}
+
+interface Props {
+  work: CatalogItem;
+  previous: CatalogItem | null;
+  next: CatalogItem | null;
+}
+
+const { work, previous, next } = Astro.props;
+const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const workUrl = (id: string) => `${base}works/${id}/`;
+const fields = [
+  ["图鉴", work.catalog],
+  ["代数", `${work.generationNumber} / ${work.generation}`],
+  ["支线", work.branch],
+  ["代号", work.code.join(" · ")],
+  ["配色", work.color.join(" · ")],
+  ["系列", work.collection.join(" · ")],
+  ["创作日期", work.creationDate ?? "日期未详"],
+].filter(([, value]) => value);
+---
+
+<BaseLayout title={work.title} description={`${work.title}，${work.catalog}收录作品。`} image={`${base}${work.image}`}>
+  <article class="work-detail">
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href={`${base}#archive`}>全部作品</a><span aria-hidden="true">/</span><span>{work.id.toUpperCase()}</span>
+    </nav>
+    <div class="detail-layout">
+      <div class="detail-art">
+        <span class="detail-number" aria-hidden="true">{work.generation}</span>
+        <img src={`${base}${work.image}`} alt={work.title} width={work.width} height={work.height} />
+      </div>
+      <div class="detail-copy">
+        <p class="eyebrow">{work.catalog} · NO. {String(work.catalogOrder).padStart(2, "0")}</p>
+        <h1>{work.title}</h1>
+        {work.reviewRequired && <p class="review-note">资料待复核：当前页面保留手稿中可确认的信息，未补写不确定内容。</p>}
+        <dl class="metadata">
+          {fields.map(([label, value]) => <div><dt>{label}</dt><dd>{value}</dd></div>)}
+        </dl>
+      </div>
+    </div>
+    <nav class="work-pagination" aria-label="作品翻页">
+      {previous ? <a href={workUrl(previous.id)}><span>上一件</span><strong>{previous.title}</strong></a> : <span />}
+      {next ? <a class="next" href={workUrl(next.id)}><span>下一件</span><strong>{next.title}</strong></a> : <span />}
+    </nav>
+  </article>
+</BaseLayout>

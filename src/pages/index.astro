@@ -1,0 +1,166 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import catalogData from "../data/catalog.json";
+import type { CatalogItem } from "../types";
+
+const works = catalogData as CatalogItem[];
+const catalogs = [...new Set(works.map((work) => work.catalog))];
+const groups = [...new Set(works.flatMap((work) => [work.branch, ...work.collection]).filter(Boolean))] as string[];
+const years = [...new Set(works.map((work) => work.year).filter(Boolean))].sort() as string[];
+const hero = works.find((work) => work.id === "b4-18") ?? works.at(-1)!;
+const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const workUrl = (id: string) => `${base}works/${id}/`;
+---
+
+<BaseLayout>
+  <section class="hero" aria-labelledby="page-title">
+    <div class="hero-copy">
+      <p class="eyebrow">PAULINE ARCHIVE · 2017—2024</p>
+      <h1 id="page-title">宝莲图鉴</h1>
+      <p class="hero-lead">四册手绘鞋履档案，收录 88 件作品。<br />从纸上设想，到一条持续七年的设计线索。</p>
+      <a class="text-link" href="#archive">开始浏览 <span aria-hidden="true">↓</span></a>
+      <dl class="hero-stats" aria-label="图鉴统计">
+        <div><dt>88</dt><dd>件作品</dd></div>
+        <div><dt>4</dt><dd>册图鉴</dd></div>
+        <div><dt>7</dt><dd>年跨度</dd></div>
+      </dl>
+    </div>
+    <a class="hero-art" href={workUrl(hero.id)} aria-label={`查看 ${hero.title}`}>
+      <span class="hero-number" aria-hidden="true">LVIII</span>
+      <img src={`${base}${hero.image}`} alt={hero.title} width="1600" height="1200" fetchpriority="high" />
+      <span class="hero-caption">{hero.creationDate} · {hero.collection.join(" / ") || hero.catalog}</span>
+    </a>
+  </section>
+
+  <section class="archive" id="archive" aria-labelledby="archive-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">COMPLETE CATALOGUE</p>
+        <h2 id="archive-title">全部作品</h2>
+      </div>
+      <p><span id="result-count">{works.length}</span> / {works.length}</p>
+    </div>
+
+    <form class="filters" id="filters" role="search">
+      <label class="search-field">
+        <span>搜索</span>
+        <input id="search" type="search" placeholder="名称、代号或系列" autocomplete="off" />
+      </label>
+      <label>
+        <span>册次</span>
+        <select id="catalog-filter">
+          <option value="">全部图鉴</option>
+          {catalogs.map((catalog) => <option value={catalog}>{catalog}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>支线 / 系列</span>
+        <select id="group-filter">
+          <option value="">全部系列</option>
+          {groups.map((group) => <option value={group}>{group}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>年份</span>
+        <select id="year-filter">
+          <option value="">全部年份</option>
+          {years.map((year) => <option value={year}>{year}</option>)}
+          <option value="undated">日期未详</option>
+        </select>
+      </label>
+      <label>
+        <span>排序</span>
+        <select id="sort-order">
+          <option value="catalog">按册次</option>
+          <option value="date-asc">按时间（早→晚）</option>
+          <option value="date-desc">按时间（晚→早）</option>
+        </select>
+      </label>
+      <button class="reset-button" id="reset-filters" type="reset">清除筛选</button>
+    </form>
+
+    <p class="sr-only" id="filter-status" aria-live="polite"></p>
+    <div class="work-grid" id="work-grid">
+      {works.map((work, index) => (
+        <article
+          class="work-card"
+          data-index={index}
+          data-search={[work.title, work.catalog, work.branch, ...work.code, ...work.color, ...work.collection].filter(Boolean).join(" ").toLocaleLowerCase("zh-CN")}
+          data-catalog={work.catalog}
+          data-groups={[work.branch, ...work.collection].filter(Boolean).join("|")}
+          data-year={work.year ?? "undated"}
+          data-date={work.creationDate ?? "9999"}
+        >
+          <a href={workUrl(work.id)}>
+            <div class="card-art">
+              <span class="card-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+              <img src={`${base}${work.thumbnail}`} alt="" width="720" height="540" loading="lazy" decoding="async" />
+              {work.reviewRequired && <span class="review-badge">资料待复核</span>}
+            </div>
+            <div class="card-meta">
+              <h3>{work.title}</h3>
+              <p>{work.creationDate ?? "日期未详"}</p>
+              <p class="card-series">{[work.branch, ...work.collection].filter(Boolean).join(" · ") || work.catalog}</p>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+    <div class="empty-state" id="empty-state" hidden>
+      <p>没有找到符合条件的作品。</p>
+      <button type="button" data-clear>清除筛选</button>
+    </div>
+  </section>
+
+  <script>
+    const form = document.querySelector<HTMLFormElement>("#filters")!;
+    const search = document.querySelector<HTMLInputElement>("#search")!;
+    const catalog = document.querySelector<HTMLSelectElement>("#catalog-filter")!;
+    const group = document.querySelector<HTMLSelectElement>("#group-filter")!;
+    const year = document.querySelector<HTMLSelectElement>("#year-filter")!;
+    const sort = document.querySelector<HTMLSelectElement>("#sort-order")!;
+    const grid = document.querySelector<HTMLElement>("#work-grid")!;
+    const cards = [...grid.querySelectorAll<HTMLElement>(".work-card")];
+    const count = document.querySelector<HTMLElement>("#result-count")!;
+    const status = document.querySelector<HTMLElement>("#filter-status")!;
+    const empty = document.querySelector<HTMLElement>("#empty-state")!;
+
+    const normalize = (value: string) => value.trim().toLocaleLowerCase("zh-CN");
+
+    function applyFilters() {
+      const term = normalize(search.value);
+      let visible = 0;
+      for (const card of cards) {
+        const matches = (!term || card.dataset.search?.includes(term))
+          && (!catalog.value || card.dataset.catalog === catalog.value)
+          && (!group.value || card.dataset.groups?.split("|").includes(group.value))
+          && (!year.value || card.dataset.year === year.value);
+        card.hidden = !matches;
+        if (matches) visible += 1;
+      }
+
+      const direction = sort.value === "date-desc" ? -1 : 1;
+      cards.sort((a, b) => {
+        if (sort.value === "catalog") return Number(a.dataset.index) - Number(b.dataset.index);
+        const aDate = a.dataset.date ?? "9999";
+        const bDate = b.dataset.date ?? "9999";
+        if (aDate === "9999" && bDate !== "9999") return 1;
+        if (bDate === "9999" && aDate !== "9999") return -1;
+        return aDate.localeCompare(bDate) * direction || Number(a.dataset.index) - Number(b.dataset.index);
+      });
+      grid.append(...cards);
+      count.textContent = String(visible);
+      status.textContent = `当前显示 ${visible} 件作品`;
+      empty.hidden = visible !== 0;
+    }
+
+    form.addEventListener("input", applyFilters);
+    form.addEventListener("change", applyFilters);
+    form.addEventListener("reset", () => requestAnimationFrame(applyFilters));
+    document.querySelector("[data-clear]")?.addEventListener("click", () => {
+      form.reset();
+      applyFilters();
+      search.focus();
+    });
+  </script>
+</BaseLayout>
