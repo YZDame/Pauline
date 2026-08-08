@@ -12,7 +12,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 
 SITE_ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +21,7 @@ MANIFEST = VAULT_ROOT / "工作流" / "宝莲图鉴清单.csv"
 DATA_OUTPUT = SITE_ROOT / "src" / "data" / "catalog.json"
 DETAIL_DIR = SITE_ROOT / "public" / "images" / "works"
 THUMB_DIR = SITE_ROOT / "public" / "images" / "thumbs"
+FAVICON_SOURCE = SITE_ROOT / "assets" / "favicon-source.png"
 EXPECTED_COUNTS = {"宝莲图鉴1": 32, "宝莲图鉴2": 20, "宝莲图鉴3": 18, "宝莲图鉴4（Pauline BNU）": 18}
 
 
@@ -111,14 +112,17 @@ def make_social_card(items: list[dict]) -> None:
 
 
 def make_favicon() -> None:
-    icon = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(icon)
-    draw.rounded_rectangle((8, 8, 248, 248), radius=56, fill="black", outline="white", width=6)
-    font = find_font(150, True)
-    box = draw.textbbox((0, 0), "P", font=font)
-    width = box[2] - box[0]
-    height = box[3] - box[1]
-    draw.text(((256 - width) / 2 - box[0], (256 - height) / 2 - box[1] - 2), "P", font=font, fill="white")
+    source = Image.open(FAVICON_SOURCE).convert("L")
+    monochrome = source.point(lambda value: 0 if value < 160 else 255, mode="1").convert("L")
+    bounds = ImageOps.invert(monochrome).getbbox()
+    if bounds is None:
+        raise RuntimeError("网站图标源文件中没有识别到黑色鞋形")
+    mark = monochrome.crop(bounds)
+    mark.thumbnail((224, 224), Image.Resampling.LANCZOS)
+    icon = Image.new("L", (256, 256), 255)
+    x = (icon.width - mark.width) // 2
+    y = (icon.height - mark.height) // 2
+    icon.paste(mark, (x, y))
     icon.save(SITE_ROOT / "public" / "favicon.png", optimize=True)
 
 
