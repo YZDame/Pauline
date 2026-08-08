@@ -37,7 +37,10 @@ const pageTitle = title === "宝莲图鉴" ? title : `${title} · 宝莲图鉴`;
   </head>
   <body>
     <a class="skip-link" href="#content">跳到内容</a>
-    <header><a href={base}>宝莲图鉴</a></header>
+    <header>
+      <a href={base}>宝莲图鉴</a>
+      <a class="github-link" href="https://github.com/YZDame/pauline" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </header>
     <main id="content"><slot /></main>
   </body>
 </html>

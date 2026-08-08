@@ -111,11 +111,14 @@ def make_social_card(items: list[dict]) -> None:
 
 
 def make_favicon() -> None:
-    icon = Image.new("RGBA", (128, 128), "white")
+    icon = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
     draw = ImageDraw.Draw(icon)
-    font = find_font(68, True)
+    draw.rounded_rectangle((8, 8, 248, 248), radius=56, fill="black", outline="white", width=6)
+    font = find_font(150, True)
     box = draw.textbbox((0, 0), "P", font=font)
-    draw.text(((128 - (box[2] - box[0])) / 2, 18), "P", font=font, fill="black")
+    width = box[2] - box[0]
+    height = box[3] - box[1]
+    draw.text(((256 - width) / 2 - box[0], (256 - height) / 2 - box[1] - 2), "P", font=font, fill="white")
     icon.save(SITE_ROOT / "public" / "favicon.png", optimize=True)
 
 

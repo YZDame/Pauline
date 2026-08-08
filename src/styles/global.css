@@ -38,6 +38,7 @@ header {
   height: 56px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
   border-bottom: 1px solid var(--line);
 }
@@ -46,10 +47,12 @@ header a {
   font-weight: 600;
   text-decoration: none;
 }
+.github-link { font-weight: 400; }
+.github-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .work-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   padding: 1px;
   background: var(--line);
@@ -70,7 +73,9 @@ header a {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transition: transform 300ms cubic-bezier(.2, .7, .2, 1);
 }
+.work-card:hover .work-card-image img { transform: scale(1.018); }
 .work-card-meta {
   min-height: 48px;
   padding: 8px 10px;
@@ -92,10 +97,36 @@ header a {
   margin: auto;
   padding: 0;
   border: 1px solid var(--foreground);
+  border-radius: 24px;
+  overflow: hidden;
   color: var(--foreground);
   background: var(--background);
+  opacity: 0;
+  transform: translateY(16px) scale(.975);
+  transition:
+    opacity 240ms ease,
+    transform 320ms cubic-bezier(.16, 1, .3, 1),
+    display 240ms allow-discrete,
+    overlay 240ms allow-discrete;
 }
-.work-dialog::backdrop { background: rgb(0 0 0 / 72%); }
+.work-dialog[open] { opacity: 1; transform: translateY(0) scale(1); }
+.work-dialog[open].is-closing { opacity: 0; transform: translateY(10px) scale(.985); }
+.work-dialog::backdrop {
+  background: rgb(0 0 0 / 72%);
+  opacity: 0;
+  backdrop-filter: blur(0);
+  transition:
+    opacity 240ms ease,
+    backdrop-filter 320ms ease,
+    display 240ms allow-discrete,
+    overlay 240ms allow-discrete;
+}
+.work-dialog[open]::backdrop { opacity: 1; backdrop-filter: blur(5px); }
+.work-dialog[open].is-closing::backdrop { opacity: 0; backdrop-filter: blur(0); }
+@starting-style {
+  .work-dialog[open] { opacity: 0; transform: translateY(16px) scale(.975); }
+  .work-dialog[open]::backdrop { opacity: 0; backdrop-filter: blur(0); }
+}
 .dialog-close {
   position: absolute;
   top: 8px;
@@ -210,7 +241,7 @@ header a {
 }
 
 @media (max-width: 900px) {
-  .work-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .work-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 520px) {
@@ -222,7 +253,14 @@ header a {
   }
   .back-link { width: 32px; height: 32px; }
   .work-detail > img { max-height: calc(100vh - 150px); }
+  .work-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .work-card-meta { min-height: 54px; padding: 7px 8px; align-items: flex-start; flex-direction: column; gap: 2px; }
-  .work-dialog { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
+  .work-dialog { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); border-radius: 18px; }
   .dialog-copy { padding: 14px 16px 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-card-image img,
+  .work-dialog,
+  .work-dialog::backdrop { transition: none; }
 }
