@@ -9,13 +9,13 @@ interface Props {
 
 const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
 const {
-  title = "宝莲图鉴 / Pauline Archive",
-  description = "2017–2024 年间的鞋履手绘档案，共四册、88 件作品。",
+  title = "宝莲图鉴",
+  description = "宝莲图鉴，四册共 88 件作品。",
   image = `${base}og.png`,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = new URL(image, Astro.site);
-const pageTitle = title.includes("宝莲图鉴") ? title : `${title} · 宝莲图鉴`;
+const pageTitle = title === "宝莲图鉴" ? title : `${title} · 宝莲图鉴`;
 ---
 
 <!doctype html>
@@ -23,7 +23,7 @@ const pageTitle = title.includes("宝莲图鉴") ? title : `${title} · 宝莲�
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="theme-color" content="#f4f0e7" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/png" href={`${base}favicon.png`} />
@@ -33,33 +33,11 @@ const pageTitle = title.includes("宝莲图鉴") ? title : `${title} · 宝莲�
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImage} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={pageTitle} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={socialImage} />
     <title>{pageTitle}</title>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">跳到主要内容</a>
-    <header class="site-header">
-      <a class="brand" href={base} aria-label="宝莲图鉴首页">
-        <span class="brand-mark" aria-hidden="true">P</span>
-        <span>
-          <strong>宝莲图鉴</strong>
-          <small>Pauline Archive</small>
-        </span>
-      </a>
-      <nav aria-label="主导航">
-        <a href={`${base}#archive`}>图鉴</a>
-        <a href={`${base}about/`}>关于</a>
-      </nav>
-    </header>
-    <main id="main-content">
-      <slot />
-    </main>
-    <footer class="site-footer">
-      <span>© {new Date().getFullYear()} 宝莲 / Pauline</span>
-      <span>图像作品保留全部权利</span>
-      <a href="https://github.com/YZDame/pauline" rel="me">查看 GitHub 仓库</a>
-    </footer>
+    <a class="skip-link" href="#content">跳到内容</a>
+    <header><a href={base}>宝莲图鉴</a></header>
+    <main id="content"><slot /></main>
   </body>
 </html>

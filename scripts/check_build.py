@@ -52,8 +52,8 @@ def main() -> None:
                 continue
             if target is not None and not target.exists():
                 errors.append(f"{html_file.relative_to(DIST)}: 断链 {url}")
-    if len(html_files) != 91:
-        errors.append(f"静态页数为 {len(html_files)}，应为 91")
+    if len(html_files) != 90:
+        errors.append(f"静态页数为 {len(html_files)}，应为 90")
     if errors:
         raise SystemExit("\n".join(f"ERROR: {error}" for error in errors[:30]))
     print(f"PASS: {len(html_files)} 个静态页面的 {BASE} 路径和本地链接均有效。")

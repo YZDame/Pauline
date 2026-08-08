@@ -97,31 +97,25 @@ def find_font(size: int, bold: bool = False):
 
 
 def make_social_card(items: list[dict]) -> None:
-    canvas = Image.new("RGB", (1200, 630), "#f4f0e7")
+    canvas = Image.new("RGB", (1200, 630), "white")
     draw = ImageDraw.Draw(canvas)
-    draw.rectangle((56, 52, 1144, 578), outline="#cfc6b7", width=2)
-    draw.ellipse((82, 82, 132, 132), outline="#9d2d2d", width=2)
-    draw.text((99, 88), "P", font=find_font(27, True), fill="#9d2d2d")
-    draw.text((160, 78), "宝莲图鉴", font=find_font(48, True), fill="#26231f")
-    draw.text((163, 137), "PAULINE ARCHIVE  /  2017—2024", font=find_font(19), fill="#716b62")
+    draw.text((64, 48), "宝莲图鉴", font=find_font(42, True), fill="black")
     selected = [items[0], items[len(items) // 2], items[-1]]
     for index, item in enumerate(selected):
         image = Image.open(SITE_ROOT / "public" / item["image"]).convert("RGBA")
         image.thumbnail((370, 278), Image.Resampling.LANCZOS)
         x = 42 + index * 376
-        y = 230 + (index % 2) * 12
+        y = 180
         canvas.paste(image, (x, y), image)
-    draw.text((84, 536), "4 CATALOGUES  ·  88 WORKS", font=find_font(18, True), fill="#9d2d2d")
     canvas.save(SITE_ROOT / "public" / "og.png", optimize=True)
 
 
 def make_favicon() -> None:
-    icon = Image.new("RGBA", (128, 128), "#f4f0e7")
+    icon = Image.new("RGBA", (128, 128), "white")
     draw = ImageDraw.Draw(icon)
-    draw.ellipse((10, 10, 118, 118), outline="#9d2d2d", width=5)
     font = find_font(68, True)
     box = draw.textbbox((0, 0), "P", font=font)
-    draw.text(((128 - (box[2] - box[0])) / 2, 18), "P", font=font, fill="#9d2d2d")
+    draw.text(((128 - (box[2] - box[0])) / 2, 18), "P", font=font, fill="black")
     icon.save(SITE_ROOT / "public" / "favicon.png", optimize=True)
 
 
