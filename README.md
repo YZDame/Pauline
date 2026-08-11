@@ -19,7 +19,7 @@ npm run test:data
 npm run build
 ```
 
-GitHub Actions 会在 `main` 分支每次推送后构建并发布到 [yzdame.github.io/pauline](https://yzdame.github.io/pauline/)。
+GitHub Actions 会在 `main` 分支每次推送后构建并发布到 [yzdame.github.io/Pauline](https://yzdame.github.io/Pauline/)。
 
 ## 公开边界
 

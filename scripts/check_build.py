@@ -10,7 +10,7 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-BASE = "/pauline/"
+BASE = "/Pauline/"
 
 
 class AssetParser(HTMLParser):
