@@ -14,5 +14,8 @@
     "@astrojs/check": "^0.9.4",
     "astro": "^5.13.5",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0"
   }
 }

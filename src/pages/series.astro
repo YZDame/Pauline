@@ -1,0 +1,261 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import catalogData from "../data/catalog.json";
+import { dateLabel, versionLabel } from "../lib/work-labels";
+import { dateRange, seriesAnchor, shortWorkLabel } from "../lib/archive";
+import type { CatalogItem } from "../types";
+
+const works = catalogData as CatalogItem[];
+const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+
+type Group = {
+  name: string;
+  kind: "主线" | "支线" | "系列";
+  description: string;
+  items: CatalogItem[];
+  representatives: string[];
+  related: { name: string; note: string }[];
+  filter: string;
+};
+
+const byCollection = (name: string) => works.filter((work) => work.collection.includes(name));
+const byBranch = (name: string | null) => works.filter((work) => work.branch === name);
+const groups: Group[] = [
+  {
+    name: "正代",
+    kind: "主线",
+    description: "未标记 Sheett 或 5XD 支线的 72 件作品，覆盖 I–LVIII 代，并连接全部六组系列。",
+    items: byBranch(null),
+    representatives: ["b1-01", "b2-04", "b3-05", "b4-04"],
+    related: [{ name: "Sheett", note: "第一册支线" }, { name: "5XD", note: "第一册支线" }],
+    filter: "branch=main",
+  },
+  {
+    name: "Sheett",
+    kind: "支线",
+    description: "第一册中的 8 件支线作品，日期集中在 2017 年 3–7 月，沿用独立代际编号。",
+    items: byBranch("Sheett"),
+    representatives: ["b1-09", "b1-10", "b1-15", "b1-16"],
+    related: [{ name: "正代", note: "同一册主线" }, { name: "5XD", note: "同册并行支线" }],
+    filter: "branch=Sheett",
+  },
+  {
+    name: "5XD",
+    kind: "支线",
+    description: "第一册中的 8 件支线作品，其中两件带有“中考”色彩标记，日期均位于 2017 年。",
+    items: byBranch("5XD"),
+    representatives: ["b1-17", "b1-19", "b1-23", "b1-24"],
+    related: [{ name: "正代", note: "同一册主线" }, { name: "Sheett", note: "同册并行支线" }],
+    filter: "branch=5XD",
+  },
+  {
+    name: "Trigonometric Function",
+    kind: "系列",
+    description: "9 件作品集中在 2018 年 4–6 月，以 α、β、θ、π 等符号命名。",
+    items: byCollection("Trigonometric Function"),
+    representatives: ["b2-04", "b2-05", "b2-06", "b2-12"],
+    related: [{ name: "正代", note: "所属创作主线" }],
+    filter: "series=Trigonometric%20Function",
+  },
+  {
+    name: "PLY",
+    kind: "系列",
+    description: "PLY ONE、PLY 0.7A 与 PLY ZERO，三件作品均记录于 2018 年 11 月。",
+    items: byCollection("PLY"),
+    representatives: ["b3-05", "b3-06", "b3-07"],
+    related: [{ name: "正代", note: "所属创作主线" }],
+    filter: "series=PLY",
+  },
+  {
+    name: "Basketball",
+    kind: "系列",
+    description: "Under Armour SC IV 与 Air Jordan 两件作品，分别记录于 2018 与 2019 年。",
+    items: byCollection("Basketball"),
+    representatives: ["b2-03", "b3-14"],
+    related: [{ name: "正代", note: "所属创作主线" }],
+    filter: "series=Basketball",
+  },
+  {
+    name: "BNU",
+    kind: "系列",
+    description: "18 件作品自 2020 年延续至 2024 年，其中 3 件同时归入 Cambridge，1 件同时归入 Graduation。",
+    items: byCollection("BNU"),
+    representatives: ["b4-01", "b4-12", "b4-15", "b4-18"],
+    related: [{ name: "Cambridge", note: "共享 3 件" }, { name: "Graduation", note: "共享 1 件" }],
+    filter: "series=BNU",
+  },
+  {
+    name: "Cambridge",
+    kind: "系列",
+    description: "2023 年 8 月 20 日的 3 件作品，同时属于 BNU，代号分别为 King、River Cam 与 Chilly。",
+    items: byCollection("Cambridge"),
+    representatives: ["b4-15", "b4-16", "b4-17"],
+    related: [{ name: "BNU", note: "共享全部 3 件" }],
+    filter: "series=Cambridge",
+  },
+  {
+    name: "Graduation",
+    kind: "系列",
+    description: "2024 年 4 月 7 日的 Graduation，同时属于 BNU，是当前时间线中最新的作品。",
+    items: byCollection("Graduation"),
+    representatives: ["b4-18"],
+    related: [{ name: "BNU", note: "共享这件作品" }],
+    filter: "series=Graduation",
+  },
+];
+const collectionGroups = groups.filter((group) => group.kind === "系列");
+---
+
+<BaseLayout title="系列线" description="查看宝莲图鉴正代、支线与六组系列之间的分类和共享作品关系。" section="series">
+  <section class="page-hero section-frame" aria-labelledby="series-title">
+    <h1 id="series-title" data-enter>在系列之间，看见关联</h1>
+    <div class="page-hero-copy" data-enter>
+      <p>正代、两条支线与六组系列共同构成这张可进入的关系图。分类来自原稿记录，共享作品不被重复计算为新的创作。</p>
+      <span>72 件正代 · 16 件支线 · 6 组系列</span>
+    </div>
+  </section>
+
+  <section class="series-map section-frame" aria-labelledby="series-map-title" data-reveal-group>
+    <div class="section-heading-row">
+      <h2 id="series-map-title" data-reveal>谱系总览</h2>
+      <p data-reveal>选择任意一条线，进入对应作品。</p>
+    </div>
+    <div class="lineage-root" data-reveal>
+      <strong>Pauline</strong>
+      <span>88 件作品 · 4 册图鉴</span>
+    </div>
+    <div class="lineage-branches">
+      {groups.filter((group) => group.kind !== "系列").map((group) => (
+        <a href={`#${seriesAnchor(group.name)}`} data-series-jump={seriesAnchor(group.name)} data-reveal>
+          <span>{group.kind}</span><strong>{group.name}</strong><span>{group.items.length} 件</span>
+        </a>
+      ))}
+    </div>
+    <div class="collection-map" data-reveal>
+      {collectionGroups.map((group) => (
+        <a href={`#${seriesAnchor(group.name)}`} data-series-jump={seriesAnchor(group.name)}>
+          <strong>{group.name}</strong><span>{group.items.length} 件 · {dateRange(group.items)}</span>
+        </a>
+      ))}
+    </div>
+    <div class="shared-relations" data-reveal>
+      <a href="#cambridge" data-series-jump="cambridge"><strong>BNU ∩ Cambridge</strong><span>3 件共享作品</span></a>
+      <a href="#graduation" data-series-jump="graduation"><strong>BNU ∩ Graduation</strong><span>1 件共享作品</span></a>
+    </div>
+  </section>
+
+  <section class="series-browser section-frame" id="series-browser" aria-labelledby="series-browser-title">
+    <div class="section-heading-row">
+      <h2 id="series-browser-title">系列索引</h2>
+      <p>切换分类，查看代表作品与关联。</p>
+    </div>
+    <div class="series-tabs" role="tablist" aria-label="系列分类">
+      {groups.map((group, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={`tab-${seriesAnchor(group.name)}`}
+          aria-controls={seriesAnchor(group.name)}
+          aria-selected={index === 0}
+          tabindex={index === 0 ? 0 : -1}
+          data-series-tab={seriesAnchor(group.name)}
+        >{group.name}<span>{group.items.length}</span></button>
+      ))}
+    </div>
+
+    <div class="series-panels">
+      {groups.map((group, index) => (
+        <article
+          class={index === 0 ? "series-panel is-active" : "series-panel"}
+          id={seriesAnchor(group.name)}
+          role="tabpanel"
+          aria-labelledby={`tab-${seriesAnchor(group.name)}`}
+          data-series-panel={seriesAnchor(group.name)}
+        >
+          <header class="series-panel-header">
+            <div>
+              <span>{group.kind}</span>
+              <h3>{group.name}</h3>
+              <p>{group.description}</p>
+            </div>
+            <div class="series-panel-count"><strong>{group.items.length}</strong><span>件作品</span><time>{dateRange(group.items)}</time></div>
+          </header>
+          <div class={`series-work-grid series-work-count-${group.representatives.length}`}>
+            {group.representatives.map((id) => {
+              const work = works.find((item) => item.id === id)!;
+              return (
+                <a href={`${base}works/${work.id}/`}>
+                  <img src={`${base}${work.thumbnail}`} alt={versionLabel(work)} width="720" height="540" loading="lazy" decoding="async" />
+                  <span><strong>{shortWorkLabel(work)}</strong><time datetime={work.creationDate ?? undefined}>{dateLabel(work.creationDate)}</time></span>
+                </a>
+              );
+            })}
+          </div>
+          <footer class="series-panel-footer">
+            <div class="related-links">
+              <span>关联</span>
+              {group.related.map((related) => (
+                <a href={`#${seriesAnchor(related.name)}`} data-series-jump={seriesAnchor(related.name)}>{related.name} · {related.note}</a>
+              ))}
+            </div>
+            <a class="button" href={`${base}gallery/?${group.filter}`}>在照片墙中查看全部</a>
+          </footer>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <script>
+    import { gsap } from "gsap";
+
+    const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-series-tab]")];
+    const panels = [...document.querySelectorAll<HTMLElement>("[data-series-panel]")];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function selectSeries(slug: string, animate = true) {
+      const panel = panels.find((item) => item.dataset.seriesPanel === slug);
+      const tab = tabs.find((item) => item.dataset.seriesTab === slug);
+      if (!panel || !tab) return;
+      tabs.forEach((item) => {
+        const active = item === tab;
+        item.setAttribute("aria-selected", String(active));
+        item.tabIndex = active ? 0 : -1;
+      });
+      panels.forEach((item) => item.classList.toggle("is-active", item === panel));
+      if (animate && !reduced.matches) {
+        const parts = panel.querySelectorAll(".series-panel-header, .series-work-grid, .series-panel-footer");
+        gsap.fromTo(parts, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.36, stagger: 0.055, ease: "power2.out", clearProps: "opacity,transform" });
+      }
+    }
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => selectSeries(tab.dataset.seriesTab ?? ""));
+      tab.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        let next = index;
+        if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+        if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === "Home") next = 0;
+        if (event.key === "End") next = tabs.length - 1;
+        tabs[next].focus();
+        selectSeries(tabs[next].dataset.seriesTab ?? "");
+      });
+    });
+
+    document.querySelectorAll<HTMLAnchorElement>("[data-series-jump]").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const slug = link.dataset.seriesJump ?? "";
+        selectSeries(slug);
+        history.replaceState(null, "", `#${slug}`);
+        document.querySelector("#series-browser")?.scrollIntoView({ behavior: reduced.matches ? "auto" : "smooth", block: "start" });
+      });
+    });
+
+    if (location.hash) {
+      selectSeries(location.hash.slice(1), false);
+      requestAnimationFrame(() => document.querySelector("#series-browser")?.scrollIntoView({ block: "start" }));
+    }
+  </script>
+</BaseLayout>
