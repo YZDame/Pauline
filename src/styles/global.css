@@ -205,7 +205,7 @@ main { min-height: 70vh; }
 /* The archive card */
 .home-hero {
   min-height: 960px;
-  padding: 64px var(--page-margin) 0;
+  padding: 64px var(--page-margin) 76px;
   overflow: clip;
   background: var(--surface);
 }
@@ -290,7 +290,7 @@ main { min-height: 70vh; }
 .volume-band {
   position: sticky;
   top: calc(var(--header-height) + var(--volume-heading-height) + 56px + (var(--volume-index) * var(--volume-stack-step)));
-  min-height: calc(100svh - var(--header-height) - var(--volume-heading-height) - 56px - (var(--volume-index) * var(--volume-stack-step)) - 24px);
+  height: calc(100svh - var(--header-height) - var(--volume-heading-height) - 56px - (var(--volume-index) * var(--volume-stack-step)) - 24px);
   margin-top: 68px;
   padding: 56px 40px 32px;
   background: var(--paper);
@@ -315,8 +315,8 @@ main { min-height: 70vh; }
   text-decoration: none;
 }
 .volume-register { position: absolute; top: 18px; right: 28px; font-size: 14px; font-variant-numeric: tabular-nums; }
-.volume-band-inner { min-height: 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; align-items: center; }
-.volume-image { max-height: calc(100svh - var(--header-height) - var(--volume-heading-height) - 144px - (var(--volume-index) * var(--volume-stack-step))); grid-column: 1 / 8; aspect-ratio: 16 / 10; display: block; overflow: clip; background: var(--paper); }
+.volume-band-inner { height: 100%; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: repeat(12, 1fr); gap: 24px; align-items: center; }
+.volume-image { min-height: 0; max-height: 100%; grid-column: 1 / 8; aspect-ratio: 16 / 10; display: block; overflow: clip; background: var(--paper); }
 .volume-image img { width: 100%; height: 100%; object-fit: contain; transition: transform 320ms var(--ease-out); }
 .volume-image:hover img { transform: scale(1.025); }
 .volume-copy { grid-column: 9 / 13; }
@@ -705,8 +705,8 @@ main { min-height: 70vh; }
   .intro-heading { grid-template-columns: 1fr; gap: 32px; }
   .intro-heading h2 { grid-column: auto; }
   .archive-facts { grid-template-columns: repeat(2, 1fr); gap: 48px 24px; margin-top: 72px; }
-  .volume-band { position: relative; top: auto; min-height: 0; margin-top: 76px; padding: 64px 24px 32px; }
-  .volume-band-inner { min-height: 0; grid-template-columns: 1fr; gap: 32px; }
+  .volume-band { position: relative; top: auto; height: auto; min-height: 0; margin-top: 76px; padding: 64px 24px 32px; }
+  .volume-band-inner { height: auto; min-height: 0; grid-template-columns: 1fr; grid-template-rows: auto; gap: 32px; }
   .volume-image,
   .volume-copy { grid-column: auto; }
   .volume-copy { max-width: 56ch; padding-bottom: 16px; }
@@ -744,7 +744,7 @@ main { min-height: 70vh; }
 @media (max-width: 520px) {
   .wordmark { font-size: 16px; }
   .theme-toggle { padding: 0 10px; }
-  .home-hero { min-height: 850px; padding: 24px 12px 0; }
+  .home-hero { min-height: 850px; padding: 24px 12px 76px; }
   .hero-card { min-height: 780px; padding: 28px 20px 32px; }
   .hero-register { flex-wrap: wrap; gap: 4px 12px; }
   .hero-card h1 { margin-top: 28px; font-size: 4rem; }
@@ -831,6 +831,7 @@ html[lang="en"] .language-switch { font-family: "PingFang SC", "Hiragino Sans GB
 
 @media (min-width: 801px) and (max-height: 719px) {
   .volume-section > .section-heading-row { position: static; min-height: 0; padding-block: 0; }
-  .volume-band { position: relative; top: auto; min-height: 0; }
+  .volume-band { position: relative; top: auto; height: auto; min-height: 0; }
+  .volume-band-inner { height: auto; grid-template-rows: auto; }
   .volume-image { max-height: none; }
 }
