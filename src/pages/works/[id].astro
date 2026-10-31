@@ -4,6 +4,9 @@ import catalogData from "../../data/catalog.json";
 import { dateLabel, versionLabel, workStory } from "../../lib/work-labels";
 import { seriesAnchor, shortWorkLabel } from "../../lib/archive";
 import type { CatalogItem } from "../../types";
+import { pageContext, localizeWork } from "../../lib/i18n";
+
+const { locale, base, assetBase, t } = pageContext(Astro.url);
 
 export function getStaticPaths() {
   const works = catalogData as CatalogItem[];
@@ -23,40 +26,40 @@ interface Props {
   next: CatalogItem | null;
 }
 
-const { work, previous, next } = Astro.props;
-const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const work = localizeWork(Astro.props.work, locale);
+const previous = Astro.props.previous ? localizeWork(Astro.props.previous, locale) : null;
+const next = Astro.props.next ? localizeWork(Astro.props.next, locale) : null;
+
 ---
 
-<BaseLayout title={work.title} description={workStory(work)} image={`${base}${work.image}`} section="work">
+<BaseLayout title={work.title} description={workStory(work, locale)} image={`${assetBase}${work.image}`} section="work">
   <article class="work-detail section-frame">
-    <a class="back-link" href={`${base}gallery/`} data-enter>返回照片墙</a>
+    <a class="back-link" href={`${base}gallery/`} data-enter>{t("返回照片墙")}</a>
     <div class="work-detail-layout">
       <figure class="work-detail-figure" data-enter>
-        <img src={`${base}${work.image}`} alt={versionLabel(work)} width={work.width} height={work.height} fetchpriority="high" />
+        <img src={`${assetBase}${work.image}`} alt={versionLabel(work)} width={work.width} height={work.height} fetchpriority="high" />
         <figcaption>{work.id} · {work.catalog}</figcaption>
       </figure>
       <div class="work-detail-copy">
-        <span class="work-kind" data-enter>{work.branch ? `${work.branch} 支线` : "Pauline 正代"}</span>
+        <span class="work-kind" data-enter>{work.branch ? `${work.branch} ${t("支线")}` : t("Pauline 正代")}</span>
         <h1 data-enter>{shortWorkLabel(work)}</h1>
         {work.code.length > 0 && <p class="work-codes" data-enter>{work.code.join(" · ")}</p>}
-        <time datetime={work.creationDate ?? undefined} data-enter>{dateLabel(work.creationDate)}</time>
-        <p class="work-story" data-enter>{workStory(work)}</p>
+        <time datetime={work.creationDate ?? undefined} data-enter>{dateLabel(work.creationDate, locale)}</time>
         <dl class="work-metadata" data-enter>
-          <div><dt>所属图鉴</dt><dd><a href={`${base}gallery/?catalog=${work.catalogNumber}`}>{work.catalog}</a></dd></div>
-          <div><dt>代际</dt><dd>{work.generationNumber} · {work.generation}</dd></div>
-          <div><dt>系列</dt><dd>{work.collection.length > 0 ? work.collection.map((name) => <a href={`${base}series/#${seriesAnchor(name)}`}>{name}</a>) : "未归入系列"}</dd></div>
-          <div><dt>色彩标记</dt><dd>{work.color.length > 0 ? work.color.join(" / ") : "未记录"}</dd></div>
+          <div><dt>{t("所属图鉴")}</dt><dd><a href={`${base}gallery/?catalog=${work.catalogNumber}`}>{work.catalog}</a></dd></div>
+          <div><dt>{t("代际")}</dt><dd>{work.generationNumber} · {work.generation}</dd></div>
+          <div><dt>{t("系列")}</dt><dd>{work.collection.length > 0 ? work.collection.map((name) => <a href={`${base}series/#${seriesAnchor(name)}`}>{name}</a>) : t("未归入系列")}</dd></div>
+          <div><dt>{t("色彩标记")}</dt><dd>{work.color.length > 0 ? work.color.join(" / ") : t("未记录")}</dd></div>
         </dl>
-        {work.reviewRequired && <p class="review-note" data-enter>部分原稿信息仍待复核，当前展示已记录的原始内容。</p>}
       </div>
     </div>
 
-    <nav class="work-pagination" aria-label="作品翻页" data-reveal-group>
+    <nav class="work-pagination" aria-label={t("作品翻页")} data-reveal-group>
       {previous ? (
-        <a href={`${base}works/${previous.id}/`} data-reveal><span>上一件</span><strong>{shortWorkLabel(previous)}</strong></a>
+        <a href={`${base}works/${previous.id}/`} data-reveal><span>{t("上一件")}</span><strong>{shortWorkLabel(previous)}</strong></a>
       ) : <span class="pagination-placeholder" />}
       {next ? (
-        <a href={`${base}works/${next.id}/`} data-reveal><span>下一件</span><strong>{shortWorkLabel(next)}</strong></a>
+        <a href={`${base}works/${next.id}/`} data-reveal><span>{t("下一件")}</span><strong>{shortWorkLabel(next)}</strong></a>
       ) : <span class="pagination-placeholder" />}
     </nav>
   </article>

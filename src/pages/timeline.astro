@@ -4,9 +4,12 @@ import catalogData from "../data/catalog.json";
 import { dateLabel, versionLabel } from "../lib/work-labels";
 import { byCreationDate, shortWorkLabel } from "../lib/archive";
 import type { CatalogItem } from "../types";
+import { pageContext, localizeWork, workCount } from "../lib/i18n";
 
-const works = [...(catalogData as CatalogItem[])].sort(byCreationDate);
-const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const { locale, base, assetBase, t } = pageContext(Astro.url);
+
+const works = (catalogData as CatalogItem[]).map((work) => localizeWork(work, locale)).sort(byCreationDate);
+
 const yearKeys = [...new Set(works.map((work) => work.year ?? "undated"))];
 const groups = yearKeys.map((year) => ({
   year,
@@ -14,20 +17,16 @@ const groups = yearKeys.map((year) => ({
 }));
 ---
 
-<BaseLayout title="时间线" description="按原稿日期顺序浏览宝莲图鉴的 88 件作品。" section="timeline">
+<BaseLayout title={t("时间线")} description={t("按原稿日期顺序浏览宝莲图鉴的 88 件作品。")} section="timeline">
   <section class="page-hero section-frame" aria-labelledby="timeline-title">
-    <h1 id="timeline-title" data-enter>沿时间，重读宝莲</h1>
-    <div class="page-hero-copy" data-enter>
-      <p>按原稿记录的日期顺序排列；只有月份或年份的作品保持原有精度，5 件日期未详作品单列在最后。</p>
-      <span>83 件有日期作品 · 8 个年份 · 5 件未详</span>
-    </div>
+    <h1 id="timeline-title" data-enter>{t("时间线")}</h1>
   </section>
 
   <div class="timeline-layout section-frame">
-    <nav class="year-nav" aria-label="按年份跳转">
+    <nav class="year-nav" aria-label={t("按年份跳转")}>
       {groups.map((group, index) => (
         <a href={`#year-${group.year}`} data-year-link class={index === 0 ? "is-active" : undefined} aria-current={index === 0 ? "location" : undefined}>
-          <span>{group.year === "undated" ? "未详" : group.year}</span>
+          <span>{group.year === "undated" ? t("未详") : group.year}</span>
           <span>{group.items.length}</span>
         </a>
       ))}
@@ -37,14 +36,14 @@ const groups = yearKeys.map((year) => ({
       {groups.map((group) => (
         <section class="year-section" id={`year-${group.year}`} data-year-section aria-labelledby={`year-title-${group.year}`} data-reveal-group>
           <header class="year-heading">
-            <h2 id={`year-title-${group.year}`} data-reveal>{group.year === "undated" ? "日期未详" : group.year}</h2>
-            <span data-reveal>{group.items.length} 件作品</span>
+            <h2 id={`year-title-${group.year}`} data-reveal>{group.year === "undated" ? t("日期未详") : group.year}</h2>
+            <span data-reveal>{workCount(group.items.length, locale)}</span>
           </header>
           <div class="timeline-entries">
             {group.items.map((work) => (
               <a class="timeline-entry" href={`${base}works/${work.id}/`} data-reveal>
-                <time datetime={work.creationDate ?? undefined}>{dateLabel(work.creationDate)}</time>
-                <span class="timeline-thumb"><img src={`${base}${work.thumbnail}`} alt={versionLabel(work)} width="720" height="540" loading="lazy" decoding="async" /></span>
+                <time datetime={work.creationDate ?? undefined}>{dateLabel(work.creationDate, locale)}</time>
+                <span class="timeline-thumb"><img src={`${assetBase}${work.thumbnail}`} alt={versionLabel(work)} width="720" height="540" loading="lazy" decoding="async" /></span>
                 <span class="timeline-entry-copy">
                   <strong>{shortWorkLabel(work)}</strong>
                   {work.code.length > 0 && <span>{work.code.join(" · ")}</span>}

@@ -1,10 +1,14 @@
 ---
+import { pageContext } from "../lib/i18n";
+const { t, locale, chinesePath, englishPath } = pageContext(Astro.url);
+
 interface Props {
   base: string;
   section?: string;
 }
 
 const { base, section = "home" } = Astro.props;
+const otherLanguage = locale === "en" ? chinesePath : englishPath;
 const items = [
   { id: "home", label: "首页", href: base },
   { id: "timeline", label: "时间线", href: `${base}timeline/` },
@@ -15,27 +19,28 @@ const items = [
 
 <header class="site-header">
   <div class="site-header-inner">
-    <a class="wordmark" href={base} aria-label="宝莲图鉴首页">
-      <span>宝莲图鉴</span>
-      <span class="wordmark-en">Pauline Archive</span>
+    <a class="wordmark" href={base} aria-label={t("宝莲图鉴首页")}>
+      <span>{t("宝莲图鉴")}</span>
+      {locale === "zh" && <span class="wordmark-en">Pauline Archive</span>}
     </a>
 
-    <nav class="desktop-nav" aria-label="主导航">
+    <nav class="desktop-nav" aria-label={t("主导航")}>
       {items.map((item) => (
         <a href={item.href} class={section === item.id ? "is-active" : undefined} aria-current={section === item.id ? "page" : undefined}>
-          {item.label}
+          {t(item.label)}
         </a>
       ))}
     </nav>
 
     <div class="header-actions">
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深色模式">深色</button>
+      <a class="language-switch" href={otherLanguage} lang={locale === "en" ? "zh-CN" : "en"} hreflang={locale === "en" ? "zh-CN" : "en"} aria-label={locale === "en" ? "切换中文" : "Switch to English"} data-language-switch>{locale === "en" ? "中文" : "EN"}</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label={t("切换深色模式")}>{t("深色")}</button>
       <details class="mobile-nav" data-mobile-nav>
-        <summary>菜单</summary>
-        <nav aria-label="移动端主导航">
+        <summary>{t("菜单")}</summary>
+        <nav aria-label={t("移动端主导航")}>
           {items.map((item) => (
             <a href={item.href} class={section === item.id ? "is-active" : undefined} aria-current={section === item.id ? "page" : undefined}>
-              {item.label}
+              {t(item.label)}
             </a>
           ))}
         </nav>

@@ -10,8 +10,9 @@ const themeButtons = document.querySelectorAll<HTMLButtonElement>("[data-theme-t
 function updateThemeButtons() {
   const dark = root.dataset.theme === "dark";
   themeButtons.forEach((button) => {
-    button.textContent = dark ? "浅色" : "深色";
-    button.setAttribute("aria-label", dark ? "切换浅色模式" : "切换深色模式");
+    const english = root.lang === "en";
+    button.textContent = english ? (dark ? "Light" : "Dark") : (dark ? "浅色" : "深色");
+    button.setAttribute("aria-label", english ? (dark ? "Switch to light mode" : "Switch to dark mode") : (dark ? "切换浅色模式" : "切换深色模式"));
   });
 }
 
@@ -27,6 +28,14 @@ themeButtons.forEach((button) => {
     }
     updateThemeButtons();
   });
+});
+
+document.querySelector<HTMLAnchorElement>("[data-language-switch]")?.addEventListener("click", (event) => {
+  if (!(event.currentTarget instanceof HTMLAnchorElement)) return;
+  const target = new URL(event.currentTarget.href);
+  target.search = location.search;
+  target.hash = location.hash;
+  event.currentTarget.href = target.href;
 });
 
 const mobileNav = document.querySelector<HTMLDetailsElement>("[data-mobile-nav]");

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import importlib.util
@@ -127,6 +128,9 @@ def make_favicon() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--metadata-only", action="store_true", help="Update catalogue data without regenerating images")
+    args = parser.parse_args()
     workflow = load_workflow_module()
     with MANIFEST.open(newline="", encoding="utf-8-sig") as handle:
         rows = list(csv.DictReader(handle))
@@ -140,9 +144,10 @@ def main() -> None:
     DATA_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     DETAIL_DIR.mkdir(parents=True, exist_ok=True)
     THUMB_DIR.mkdir(parents=True, exist_ok=True)
-    for directory in (DETAIL_DIR, THUMB_DIR):
-        for stale in directory.glob("*.webp"):
-            stale.unlink()
+    if not args.metadata_only:
+        for directory in (DETAIL_DIR, THUMB_DIR):
+            for stale in directory.glob("*.webp"):
+                stale.unlink()
 
     items: list[dict] = []
     ids: set[str] = set()
@@ -156,19 +161,20 @@ def main() -> None:
             raise RuntimeError(f"重复稳定 ID：{stable_id}")
         ids.add(stable_id)
 
-        expected, _ = workflow.asset_paths(VAULT_ROOT, row)
-        source_path = resolve_renamed_asset(expected, used_sources)
-        used_sources.add(source_path)
-        with Image.open(source_path) as opened:
-            source = opened.convert("RGBA")
-            if source.size != (1600, 1200) or opened.mode != "RGBA":
-                raise RuntimeError(f"电子图规格错误：{source_path} {opened.mode} {opened.size}")
-            alpha = source.getchannel("A")
-            if any(alpha.getpixel(point) != 0 for point in ((0, 0), (1599, 0), (0, 1199), (1599, 1199))):
-                raise RuntimeError(f"四角不透明：{source_path}")
-            detail_path = DETAIL_DIR / f"{stable_id}.webp"
-            thumb_path = THUMB_DIR / f"{stable_id}.webp"
-            save_webp(source, detail_path, thumb_path)
+        if not args.metadata_only:
+            expected, _ = workflow.asset_paths(VAULT_ROOT, row)
+            source_path = resolve_renamed_asset(expected, used_sources)
+            used_sources.add(source_path)
+            with Image.open(source_path) as opened:
+                source = opened.convert("RGBA")
+                if source.size != (1600, 1200) or opened.mode != "RGBA":
+                    raise RuntimeError(f"电子图规格错误：{source_path} {opened.mode} {opened.size}")
+                alpha = source.getchannel("A")
+                if any(alpha.getpixel(point) != 0 for point in ((0, 0), (1599, 0), (0, 1199), (1599, 1199))):
+                    raise RuntimeError(f"四角不透明：{source_path}")
+                detail_path = DETAIL_DIR / f"{stable_id}.webp"
+                thumb_path = THUMB_DIR / f"{stable_id}.webp"
+                save_webp(source, detail_path, thumb_path)
 
         title = workflow.note_slug(row)
         creation_date = row["creation_date"].strip() or None
@@ -196,9 +202,10 @@ def main() -> None:
         items.append(item)
 
     DATA_OUTPUT.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    make_social_card(items)
-    make_favicon()
-    print(f"PASS: 已生成 {len(items)} 条数据、{len(items)} 张详情图和 {len(items)} 张缩略图。")
+    if not args.metadata_only:
+        make_social_card(items)
+        make_favicon()
+    print(f"PASS: 已更新 {len(items)} 条作品数据。" if args.metadata_only else f"PASS: 已生成 {len(items)} 条数据、{len(items)} 张详情图和 {len(items)} 张缩略图。")
 
 
 if __name__ == "__main__":

@@ -1,12 +1,15 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+import { pageContext } from "../lib/i18n";
+
+const { base, t } = pageContext(Astro.url);
+
 ---
 
-<BaseLayout title="页面未找到" section="other">
+<BaseLayout title={t("页面未找到")} section="other">
   <section class="not-found section-frame">
     <h1 data-enter>404</h1>
-    <p data-enter>这一页不在当前图鉴中。</p>
-    <a class="button" href={base} data-enter>返回宝莲图鉴</a>
+    <p data-enter>{t("这一页不在当前图鉴中。")}</p>
+    <a class="button" href={base} data-enter>{t("返回宝莲图鉴")}</a>
   </section>
 </BaseLayout>

@@ -1,4 +1,7 @@
 ---
+import { pageContext } from "../lib/i18n";
+const { t } = pageContext(Astro.url);
+
 interface Props {
   base: string;
 }
@@ -8,18 +11,17 @@ const { base } = Astro.props;
 <footer class="site-footer">
   <div class="footer-card" data-reveal-group>
     <div class="footer-message" data-reveal>
-      <h2>宝莲图鉴</h2>
-      <p>四册手稿仍在同一条创作线上。<br />从时间、系列或任意一件作品继续。</p>
+      <h2>{t("宝莲图鉴")}</h2>
     </div>
-    <nav class="footer-links" aria-label="页脚导航" data-reveal>
-      <a href={`${base}timeline/`}>时间线</a>
-      <a href={`${base}series/`}>系列线</a>
-      <a href={`${base}gallery/`}>全部 88 件作品</a>
+    <nav class="footer-links" aria-label={t("页脚导航")} data-reveal>
+      <a href={`${base}timeline/`}>{t("时间线")}</a>
+      <a href={`${base}series/`}>{t("系列线")}</a>
+      <a href={`${base}gallery/`}>{t("全部 88 件作品")}</a>
       <a href="https://github.com/YZDame/pauline" target="_blank" rel="noreferrer">GitHub ↗</a>
     </nav>
     <div class="footer-imprint" data-reveal>
       <span>2017–2024</span>
-      <span>作品与图像保留全部权利</span>
+      <span>{t("作品与图像保留全部权利")}</span>
     </div>
   </div>
 </footer>

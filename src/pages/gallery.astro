@@ -2,29 +2,34 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import FilterSelect from "../components/FilterSelect.astro";
 import catalogData from "../data/catalog.json";
-import { dateLabel, versionLabel, workStory } from "../lib/work-labels";
+import { dateLabel, versionLabel } from "../lib/work-labels";
 import { shortWorkLabel, workSearchText } from "../lib/archive";
 import type { CatalogItem } from "../types";
+import { pageContext, localizeWork } from "../lib/i18n";
 
-const works = catalogData as CatalogItem[];
-const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const { locale, base, assetBase, t } = pageContext(Astro.url);
+
+const works = (catalogData as CatalogItem[]).map((work) => localizeWork(work, locale));
+const searchText = new Map((catalogData as CatalogItem[]).map((work) => [
+  work.id, `${workSearchText(work)} ${workSearchText(localizeWork(work, "en"))}`,
+]));
+
 const years = [...new Set(works.map((work) => work.year).filter(Boolean))] as string[];
 years.sort();
 const collectionOrder = ["Trigonometric Function", "PLY", "Basketball", "BNU", "Cambridge", "Graduation"];
 ---
 
-<BaseLayout title="照片墙" description="搜索并筛选宝莲图鉴全部 88 件作品，保留快速照片墙预览。" section="gallery">
+<BaseLayout title={t("照片墙")} description={t("搜索并筛选宝莲图鉴全部 88 件作品，保留快速照片墙预览。")} section="gallery">
   <section class="gallery-hero section-frame" aria-labelledby="gallery-title">
     <div class="gallery-title-row">
-      <h1 id="gallery-title" data-enter>全部作品</h1>
-      <p data-enter>搜索作品名称，或按册次、年份、系列与支线缩小范围。点击作品可快速预览，也可以进入独立页面。</p>
+      <h1 id="gallery-title" data-enter>{t("全部作品")}</h1>
     </div>
 
     <form class="gallery-filters" action={`${base}gallery/`} method="get" data-gallery-filters data-ui data-enter>
-      <label class="search-field"><span>搜索</span><input type="search" name="q" placeholder="代号、系列或作品名称" autocomplete="off" data-search-filter /></label>
+      <label class="search-field"><span>{t("搜索")}</span><input type="search" name="q" placeholder={t("代号、系列或作品名称")} autocomplete="off" data-search-filter /></label>
       <FilterSelect name="catalog" label="册次" options={[
         { value: "", label: "全部四册" },
-        ...[1, 2, 3, 4].map((number) => ({ value: String(number), label: `宝莲图鉴 ${number}` })),
+        ...[1, 2, 3, 4].map((number) => ({ value: String(number), label: locale === "en" ? `Volume ${number}` : `宝莲图鉴 ${number}` })),
       ]} />
       <FilterSelect name="year" label="年份" options={[
         { value: "", label: "全部年份" },
@@ -38,14 +43,14 @@ const collectionOrder = ["Trigonometric Function", "PLY", "Basketball", "BNU", "
         { value: "branch:Sheett", label: "Sheett", group: "创作线" },
         { value: "branch:5XD", label: "5XD", group: "创作线" },
       ]} />
-      <button class="filter-reset" type="reset" data-reset>重置</button>
+      <button class="filter-reset" type="reset" data-reset>{t("重置")}</button>
     </form>
   </section>
 
   <section class="gallery-index section-frame" aria-labelledby="wall-title">
     <div class="gallery-heading">
-      <h2 id="wall-title">作品照片墙</h2>
-      <p role="status" aria-live="polite"><span data-result-count>{works.length}</span> 件作品</p>
+      <h2 id="wall-title">{t("作品照片墙")}</h2>
+      <p role="status" aria-live="polite"><span data-result-count>{works.length}</span> <span data-result-unit>{locale === "en" ? "works" : "件作品"}</span></p>
     </div>
 
     <div class="work-grid">
@@ -53,47 +58,44 @@ const collectionOrder = ["Trigonometric Function", "PLY", "Basketball", "BNU", "
         <a
           class="work-card"
           href={`${base}works/${work.id}/`}
-          aria-label={`预览 ${versionLabel(work)}`}
+          aria-label={`${locale === "en" ? "Preview" : "预览"} ${versionLabel(work)}`}
           data-work
-          data-search={workSearchText(work)}
+          data-search={searchText.get(work.id)}
           data-catalog-number={work.catalogNumber}
           data-year={work.year ?? "undated"}
           data-series={work.collection.join("|")}
           data-branch={work.branch ?? "main"}
           data-version={versionLabel(work)}
-          data-date={dateLabel(work.creationDate)}
-          data-story={workStory(work)}
-          data-image={`${base}${work.image}`}
+          data-date={dateLabel(work.creationDate, locale)}
+          data-image={`${assetBase}${work.image}`}
           data-url={`${base}works/${work.id}/`}
           data-catalog={work.catalog}
         >
-          <span class="work-card-image"><img src={`${base}${work.thumbnail}`} alt={versionLabel(work)} width="720" height="540" loading="lazy" decoding="async" /></span>
+          <span class="work-card-image"><img src={`${assetBase}${work.thumbnail}`} alt={versionLabel(work)} width="720" height="540" loading="lazy" decoding="async" /></span>
           <span class="work-card-meta">
             <strong>{shortWorkLabel(work)}</strong>
             {work.code.length > 0 && <span>{work.code.join(" · ")}</span>}
-            <span class="work-card-subline"><span>{work.catalog}</span><time datetime={work.creationDate ?? undefined}>{dateLabel(work.creationDate)}</time></span>
+            <span class="work-card-subline"><span>{work.catalog}</span><time datetime={work.creationDate ?? undefined}>{dateLabel(work.creationDate, locale)}</time></span>
           </span>
         </a>
       ))}
     </div>
 
     <div class="gallery-empty" data-gallery-empty hidden>
-      <h3>没有符合条件的作品</h3>
-      <p>尝试减少筛选条件，或搜索更短的代号。</p>
-      <button class="button" type="button" data-empty-reset>清除筛选</button>
+      <h3>{t("没有符合条件的作品")}</h3>
+      <button class="button" type="button" data-empty-reset>{t("清除筛选")}</button>
     </div>
   </section>
 
-  <dialog class="work-dialog" aria-labelledby="dialog-version" aria-describedby="dialog-story">
-    <button class="dialog-close" type="button" aria-label="关闭预览" data-dialog-close>关闭</button>
+  <dialog class="work-dialog" aria-labelledby="dialog-version">
+    <button class="dialog-close" type="button" aria-label={t("关闭预览")} data-dialog-close>{t("关闭")}</button>
     <div class="dialog-layout">
-      <img class="dialog-image" src={`${base}${works[0].image}`} alt="" width="1600" height="1200" />
+      <img class="dialog-image" src={`${assetBase}${works[0].image}`} alt="" width="1600" height="1200" />
       <div class="dialog-copy">
         <span id="dialog-catalog"></span>
         <h2 id="dialog-version"></h2>
         <time id="dialog-date"></time>
-        <p id="dialog-story"></p>
-        <a class="button" id="dialog-link" href={`${base}works/${works[0].id}/`}>查看完整作品</a>
+        <a class="button" id="dialog-link" href={`${base}works/${works[0].id}/`}>{t("查看完整作品")}</a>
       </div>
     </div>
   </dialog>
@@ -109,6 +111,7 @@ const collectionOrder = ["Trigonometric Function", "PLY", "Basketball", "BNU", "
     const group = document.querySelector<HTMLSelectElement>("[data-group-filter]");
     const cards = [...document.querySelectorAll<HTMLAnchorElement>("[data-work]")];
     const count = document.querySelector<HTMLElement>("[data-result-count]");
+    const unit = document.querySelector<HTMLElement>("[data-result-unit]");
     const empty = document.querySelector<HTMLElement>("[data-gallery-empty]");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -138,6 +141,7 @@ const collectionOrder = ["Trigonometric Function", "PLY", "Basketball", "BNU", "
       });
 
       if (count) count.textContent = String(visible.length);
+      if (unit && document.documentElement.lang === "en") unit.textContent = visible.length === 1 ? "work" : "works";
       if (empty) empty.hidden = visible.length > 0;
 
       if (updateUrl) {
@@ -167,20 +171,18 @@ const collectionOrder = ["Trigonometric Function", "PLY", "Basketball", "BNU", "
     const dialogImage = dialog?.querySelector<HTMLImageElement>(".dialog-image");
     const dialogVersion = dialog?.querySelector<HTMLElement>("#dialog-version");
     const dialogDate = dialog?.querySelector<HTMLTimeElement>("#dialog-date");
-    const dialogStory = dialog?.querySelector<HTMLElement>("#dialog-story");
     const dialogCatalog = dialog?.querySelector<HTMLElement>("#dialog-catalog");
     const dialogLink = dialog?.querySelector<HTMLAnchorElement>("#dialog-link");
 
     cards.forEach((card) => {
       card.addEventListener("click", (event) => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-        if (!dialog || !dialogImage || !dialogVersion || !dialogDate || !dialogStory || !dialogCatalog || !dialogLink) return;
+        if (!dialog || !dialogImage || !dialogVersion || !dialogDate || !dialogCatalog || !dialogLink) return;
         event.preventDefault();
         dialogImage.src = card.dataset.image ?? "";
         dialogImage.alt = card.dataset.version ?? "";
         dialogVersion.textContent = card.dataset.version ?? "";
         dialogDate.textContent = card.dataset.date ?? "";
-        dialogStory.textContent = card.dataset.story ?? "";
         dialogCatalog.textContent = card.dataset.catalog ?? "";
         dialogLink.href = card.dataset.url ?? "";
         dialog.showModal();

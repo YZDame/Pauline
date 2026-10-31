@@ -1,0 +1,13 @@
+---
+import Page from "../../works/[id].astro";
+import catalogData from "../../../data/catalog.json";
+
+export function getStaticPaths() {
+  return catalogData.map((work, index) => ({
+    params: { id: work.id },
+    props: { work, previous: catalogData[index - 1] ?? null, next: catalogData[index + 1] ?? null },
+  }));
+}
+---
+
+<Page {...Astro.props} />

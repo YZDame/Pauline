@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import geistSerifUrl from "../assets/fonts/GeistSerif-Regular.woff2?url";
+import { pageContext } from "../lib/i18n";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 
@@ -10,30 +12,38 @@ interface Props {
   section?: "home" | "timeline" | "series" | "gallery" | "work" | "other";
 }
 
-const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const { base, assetBase, locale, chinesePath, englishPath, t } = pageContext(Astro.url);
 const {
-  title = "宝莲图鉴",
-  description = "宝莲图鉴，四册共 88 件鞋履手稿，记录 2017–2024 年的创作线。",
-  image = `${base}og.png`,
+  title = t("宝莲图鉴"),
+  description = t("宝莲图鉴，四册共 88 件鞋履手稿，记录 2017–2024 年的创作线。"),
+  image = `${assetBase}og.png`,
   section = "other",
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonical = new URL(locale === "en" ? englishPath : chinesePath, Astro.site);
 const socialImage = new URL(image, Astro.site);
-const pageTitle = title === "宝莲图鉴" ? title : `${title} · 宝莲图鉴`;
+const pageTitle = title === t("宝莲图鉴") ? title : `${title} · ${t("宝莲图鉴")}`;
+const chineseUrl = new URL(chinesePath, Astro.site);
+const englishUrl = new URL(englishPath, Astro.site);
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={locale === "en" ? "en" : "zh-CN"}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/png" href={`${base}favicon.png?v=shoe`} />
-    <link rel="preconnect" href="https://api.fontshare.com" />
-    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="alternate" hreflang="zh-CN" href={chineseUrl} />
+    <link rel="alternate" hreflang="en" href={englishUrl} />
+    <link rel="alternate" hreflang="x-default" href={chineseUrl} />
+    {locale === "en" && <link rel="preload" href={geistSerifUrl} as="font" type="font/woff2" crossorigin />}
+    <link rel="icon" type="image/png" href={`${assetBase}favicon.png?v=shoe`} />
+    {locale === "zh" && <>
+      <link rel="preconnect" href="https://api.fontshare.com" />
+      <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+      <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+    </>}
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -53,7 +63,7 @@ const pageTitle = title === "宝莲图鉴" ? title : `${title} · 宝莲图鉴`;
     </script>
   </head>
   <body class={`page-${section}`}>
-    <a class="skip-link" href="#content">跳到内容</a>
+    <a class="skip-link" href="#content">{t("跳到内容")}</a>
     <SiteHeader base={base} section={section} />
     <div class="page-shell">
       <main id="content"><slot /></main>
